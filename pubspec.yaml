@@ -1,0 +1,20 @@
+name: music_player_bottom_sheet
+description: An Apple-Music-like material bottom sheet implementation for music player.
+version: 0.0.1
+author:
+homepage:
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+  flutter: ">=1.17.0 <2.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  after_layout: ^1.0.7+2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  
+flutter:
