@@ -147,6 +147,9 @@ class MusicPlayerAnimationController extends Animation<double>
     if(upperBoundValue.pixel != null) {
       upperBoundValue.percentage = upperBoundValue.pixel / _widgetHeight;
     }
+    if (showAfterStart) {
+      launchTo(initialValue, lowerBound);
+    }
   }
 
   TickerFuture expand({ double from }) {
