@@ -85,8 +85,8 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       child:Scaffold(
         body: MusicPlayerSheet(
           animationController: _playerController,
-          contentLayer: _getLowerLayer(),
-          playerLayer: _getUpperLayer(),
+          lowerLayer: _getLowerLayer(),
+          upperLayer: _getUpperLayer(),
         ),
         bottomNavigationBar: bottomNavBar,
       ),

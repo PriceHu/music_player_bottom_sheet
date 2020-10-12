@@ -11,8 +11,9 @@ class MusicPlayerSheet extends StatefulWidget{
   const MusicPlayerSheet({
     Key key,
     @required this.animationController,
-    @required this.contentLayer,
-    @required this.playerLayer,
+    @required this.lowerLayer,
+    @required this.upperLayer,
+    this.safeAreaPadding = false,
     this.scrollController,
     this.menuLayer,
     this.menuHeight = 54.0,
@@ -26,8 +27,9 @@ class MusicPlayerSheet extends StatefulWidget{
 
   final ScrollController scrollController;
   final MusicPlayerAnimationController animationController;
-  final Widget contentLayer;
-  final Widget playerLayer;
+  final Widget lowerLayer;
+  final Widget upperLayer;
+  final bool safeAreaPadding;
   // may be removed
   final Widget menuLayer;
   final double menuHeight;
@@ -161,7 +163,7 @@ class MusicPlayerSheetState extends State<MusicPlayerSheet>
     var playerSheet = Stack(
       children: <Widget>[
         header,
-        widget.playerLayer,
+        widget.upperLayer,
       ],
     );
     var element;
@@ -179,7 +181,7 @@ class MusicPlayerSheetState extends State<MusicPlayerSheet>
       children: <Widget>[
         Container(
           margin: EdgeInsets.only(bottom: _sheetMinimumHeight),
-          child: widget.contentLayer,
+          child: widget.lowerLayer,
         ),
         Align(
           alignment: Alignment.bottomCenter,
@@ -219,16 +221,22 @@ class MusicPlayerSheetState extends State<MusicPlayerSheet>
           }
         }
       } else {
-        var friction = 1.0;
-        var diff;
+        double friction = 1.0;
         // restrict between upper and lower bound
         if (animationController.value >= animationController.upperBound && details.primaryDelta < 0) {
           friction = 0;
         } else if (animationController.value <= animationController.lowerBound && details.primaryDelta > 0) {
           friction = 0;
         }
+        double newValue = animationController.value - details.primaryDelta / _screenHeight * friction;
+        if (newValue >= animationController.upperBound) {
+          newValue = animationController.upperBound;
+        } else if (newValue <= animationController.lowerBound) {
+          newValue = animationController.lowerBound;
+        }
 
-        animationController.value -= details.primaryDelta / _screenHeight * friction;
+        animationController.value = newValue;
+
         if (_shouldScroll && animationController.value >= animationController.upperBound) {
           _setScrolling(true);
           var startDetails = DragStartDetails(
@@ -312,6 +320,10 @@ class MusicPlayerSheetState extends State<MusicPlayerSheet>
 
   @override
   void afterFirstLayout(BuildContext context) {
+    double padding = MediaQuery.of(context).padding.top;
+    if (widget.safeAreaPadding) {
+        animationController.upperBoundValue = MusicPlayerAnimationValue(pixel: widgetHeight - padding);
+      }
     setState(() {
       animationController.height = widgetHeight;
       _sheetMinimumHeight = widget.animationController.lowerBoundValue.pixel;

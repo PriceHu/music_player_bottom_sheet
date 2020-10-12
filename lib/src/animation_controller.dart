@@ -36,7 +36,7 @@ class MusicPlayerAnimationController extends Animation<double>
   final String debugLabel;
   
   MusicPlayerAnimationValue lowerBoundValue;
-  MusicPlayerAnimationValue upperBoundValue = MusicPlayerAnimationValue(percentage: 1.0);
+  MusicPlayerAnimationValue upperBoundValue;
   double initialValue = 0.0;
   bool showAfterStart;
   Duration duration;
@@ -88,6 +88,7 @@ class MusicPlayerAnimationController extends Animation<double>
   
   MusicPlayerAnimationController({
     this.lowerBoundValue,
+    this.upperBoundValue,
     this.duration = const Duration(milliseconds: 250),
     this.debugLabel,
     this.showAfterStart = false,
@@ -98,6 +99,9 @@ class MusicPlayerAnimationController extends Animation<double>
     _ticker = vsync.createTicker(_tick);
     if (lowerBoundValue == null) {
       lowerBoundValue = MusicPlayerAnimationValue(pixel: 64.0);
+    }
+    if (upperBoundValue == null) {
+      upperBoundValue = MusicPlayerAnimationValue(percentage: 1.0);
     }
     if (springDescription != null) {
       _springDescription = springDescription;
