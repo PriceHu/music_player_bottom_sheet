@@ -37,6 +37,7 @@ class MusicPlayerAnimationController extends Animation<double>
   
   MusicPlayerAnimationValue lowerBoundValue;
   MusicPlayerAnimationValue upperBoundValue;
+  /// The initial height of the bottom sheet. Always 0.
   double initialValue = 0.0;
   bool showAfterStart;
   Duration duration;
@@ -50,7 +51,9 @@ class MusicPlayerAnimationController extends Animation<double>
   AnimationStatus _status = AnimationStatus.completed;
   SpringDescription _springDescription = _kFlingSpringDefaultDescription;
 
+  /// The minimum value that the animation controller can reach
   double get lowerBound => lowerBoundValue.percentage;
+  /// The minimum value that the animation controller can reach
   double get upperBound => upperBoundValue.percentage;
   Animation<double> get view => this;
   double get velocity {
@@ -70,7 +73,7 @@ class MusicPlayerAnimationController extends Animation<double>
 
   set height(double value) {
     _widgetHeight = value;
-    syncAnimationValues();
+    _syncAnimationValues();
     // value = _value; // ?
   }
 
@@ -86,6 +89,21 @@ class MusicPlayerAnimationController extends Animation<double>
     _springDescription = description;
   }
   
+  /// Create an animation controller for the bottom sheet.
+  /// 
+  /// The [lowerBoundValue] and [upperBoundValue] is the minimum and maximum height that the bottom sheet
+  /// can reach. Once the bottom sheet has launched, it can not exceed these two bounds. 
+  /// 
+  /// The default value of [lowerBoundValue] is 64 px above the bottom of the widget.
+  /// 
+  /// The default value of [upperBoundValue] is 100% of the height of the height.
+  /// If [MusicPlayerSheet.safeAreaPadding] if set to true, this will be 100% of height minus the padding
+  /// height.
+  /// 
+  /// [showAfterStart] controls whether the bottom sheet will show minimum height automatically after created.
+  /// The default is [false]. If you want to manually show the bottom sheet, for example, after initializing
+  /// some modules, set [showAfterStart] to false and call [launch()], or [launchTo(from, to)] if you wish to
+  /// customize.
   MusicPlayerAnimationController({
     this.lowerBoundValue,
     this.upperBoundValue,
@@ -140,7 +158,7 @@ class MusicPlayerAnimationController extends Animation<double>
     }
   }
 
-  void syncAnimationValues() {
+  void _syncAnimationValues() {
     // sets initial value if lower bound has only pixel value
     if(initialValue == null && lowerBound == null) {
       _value = lowerBoundValue.pixel / _widgetHeight;
@@ -156,21 +174,28 @@ class MusicPlayerAnimationController extends Animation<double>
     }
   }
 
+  /// Expand the bottom sheet to the maximum height ([upperBound])
+  /// 
+  /// [from]: specify the starting point
   TickerFuture expand({ double from }) {
     return animateTo(from: from, to: upperBound);
   }
 
+  /// Collapse the bottom sheet to the minimum height ([lowerBound])
+  /// 
+  /// [from]: specify the starting point
   TickerFuture collapse({ double from }) {
     return animateTo(from: from, to: lowerBound);
   }
 
+  /// Manually control the bottom sheet to animate from one value to another
   TickerFuture animateTo({ double from, double to, Curve curve = Curves.fastOutSlowIn }) { 
     assert(() {
       if (duration == null) {
         throw FlutterError(
-            'AnimationController.collapse() called with no default Duration.\n'
+            'AnimationController.animateTo() called with no default Duration.\n'
                 'The "duration" property should be set, either in the constructor or later, before '
-                'calling the collapse() function.'
+                'calling the animateTo() function.'
         );
       }
       return true;
@@ -185,6 +210,15 @@ class MusicPlayerAnimationController extends Animation<double>
     return launchTo(value,target,velocity: velocity, animationBehavior: animationBehavior);
   }
 
+  /// Launch the bottom sheet to its minimum height from hiding.
+  TickerFuture launch({ double velocity = 1.0, AnimationBehavior animationBehavior }) {
+    return launchTo(initialValue, lowerBound, velocity: velocity, animationBehavior: animationBehavior);
+  }
+
+  /// Launch the bottom sheet to a certain height.
+  /// This is usually used at the beginning to show the bottom sheet from hiding.
+  /// Unlike [animateTo], the animation curve used here is a [SpringSimulation].
+  /// Although there is minor differences between there two curves.
   TickerFuture launchTo(double from, double to, { double velocity = 1.0, AnimationBehavior animationBehavior }) {
     double scale = 1.0;
     final AnimationBehavior behavior = animationBehavior ?? this.animationBehavior;
@@ -200,10 +234,10 @@ class MusicPlayerAnimationController extends Animation<double>
     
     final Simulation simulation = SpringSimulation(_springDescription, from, to, velocity * scale)
       ..tolerance = _kFlingTolerance;
-    return animateWith(simulation);
+    return _animateWith(simulation);
   }
 
-  TickerFuture animateWith(Simulation simulation) {
+  TickerFuture _animateWith(Simulation simulation) {
     stop();
     return _startSimulation(simulation);
   }
@@ -279,6 +313,7 @@ class MusicPlayerAnimationController extends Animation<double>
     visibility.value = show;
   }
 
+  /// Manually stop the current animation
   void stop({bool canceled = true}) {
     _simulation = null;
     _lastElapsedDuration = null;
