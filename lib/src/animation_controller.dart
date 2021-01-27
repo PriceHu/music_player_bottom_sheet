@@ -53,7 +53,7 @@ class MusicPlayerAnimationController extends Animation<double>
 
   /// The minimum value that the animation controller can reach
   double get lowerBound => lowerBoundValue.percentage;
-  /// The minimum value that the animation controller can reach
+  /// The maximum value that the animation controller can reach
   double get upperBound => upperBoundValue.percentage;
   Animation<double> get view => this;
   double get velocity {
